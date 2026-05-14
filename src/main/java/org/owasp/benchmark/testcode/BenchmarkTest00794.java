@@ -73,7 +73,10 @@ public class BenchmarkTest00794 extends HttpServlet {
         }
 
         try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            javax.crypto.spec.SecretKeySpec keySpec = new javax.crypto.spec.SecretKeySpec(
+                    "changeit".getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(keySpec);
             byte[] input = {(byte) '?'};
             Object inputParam = bar;
             if (inputParam instanceof String) input = ((String) inputParam).getBytes();
@@ -88,9 +91,9 @@ public class BenchmarkTest00794 extends HttpServlet {
                 }
                 input = java.util.Arrays.copyOf(strInput, i);
             }
-            md.update(input);
+            mac.update(input);
 
-            byte[] result = md.digest();
+            byte[] result = mac.doFinal();
             java.io.File fileTarget =
                     new java.io.File(
                             new java.io.File(org.owasp.benchmark.helpers.Utils.TESTFILES_DIR),
@@ -112,7 +115,7 @@ public class BenchmarkTest00794 extends HttpServlet {
                                             .encodeForHTML(new String(input))
                                     + "' hashed and stored<br/>");
 
-        } catch (java.security.NoSuchAlgorithmException e) {
+        } catch (java.security.NoSuchAlgorithmException | java.security.InvalidKeyException e) {
             System.out.println("Problem executing hash - TestCase");
             throw new ServletException(e);
         }
