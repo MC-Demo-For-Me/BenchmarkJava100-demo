@@ -48,20 +48,20 @@ public class BenchmarkTest00176 extends HttpServlet {
         // URL Decode the header value since req.getHeader() doesn't. Unlike req.getParameter().
         param = java.net.URLDecoder.decode(param, "UTF-8");
 
-        String bar = param;
+        String bar = param.replaceAll("[^a-zA-Z0-9 _\\-\\.]", "");
 
-        String cmd = "";
         String osName = System.getProperty("os.name");
-        if (osName.indexOf("Windows") != -1) {
-            cmd = org.owasp.benchmark.helpers.Utils.getOSCommandString("echo");
-        }
-
-        String[] argsEnv = {"Foo=bar"};
-        Runtime r = Runtime.getRuntime();
 
         try {
-            Process p =
-                    r.exec(cmd + bar, argsEnv, new java.io.File(System.getProperty("user.dir")));
+            ProcessBuilder pb;
+            if (osName.indexOf("Windows") != -1) {
+                pb = new ProcessBuilder("cmd.exe", "/c", "echo", bar);
+            } else {
+                pb = new ProcessBuilder("/bin/echo", bar);
+            }
+            pb.environment().put("Foo", "bar");
+            pb.directory(new java.io.File(System.getProperty("user.dir")));
+            Process p = pb.start();
             org.owasp.benchmark.helpers.Utils.printOSCommandResults(p, response);
         } catch (IOException e) {
             System.out.println("Problem executing cmdi - TestCase");
